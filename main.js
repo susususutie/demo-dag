@@ -1,71 +1,125 @@
-import { Graph } from "@antv/x6";
+class Graph {
+  constructor() {
+    this.vertices = []; // 用来存放图中的顶点
+    this.adjList = new WeakMap(); // 用来存放图中的边
+  }
 
-const data = {
-  // 节点
-  nodes: [
-    {
-      id: "node1", // String，可选，节点的唯一标识
-      x: 40, // Number，必选，节点位置的 x 值
-      y: 40, // Number，必选，节点位置的 y 值
-      width: 80, // Number，可选，节点大小的 width 值
-      height: 40, // Number，可选，节点大小的 height 值
-      label: "hello", // String，节点标签
-    },
-    {
-      id: "node2", // String，节点的唯一标识
-      x: 160, // Number，必选，节点位置的 x 值
-      y: 40, // Number，必选，节点位置的 y 值
-      width: 80, // Number，可选，节点大小的 width 值
-      height: 40, // Number，可选，节点大小的 height 值
-      label: "world", // String，节点标签
-    },
-    {
-      id: 'node3',
-      shape: 'rect', // 使用 rect 渲染
-      x: 100,
-      y: 200,
-      width: 80,
-      height: 40,
-      label: 'hello',
-    },
-    {
-      id: 'node4',
-      shape: 'ellipse', // 使用 ellipse 渲染
-      x: 300,
-      y: 200,
-      width: 80,
-      height: 40,
-      label: 'world',
-    },
-  ],
-  // 边
-  edges: [
-    {
-      source: "node1", // String，必须，起始节点 id
-      target: "node2", // String，必须，目标节点 id
-    },
-    {
-      source: 'node2',
-      target: 'node3',
-    },
-    {
-      source: 'node3',
-      target: 'node4',
-    },
-  ],
-};
+  // 向图中添加一个新顶点
+  addVertex(v) {
+    if (!this.vertices.includes(v)) {
+      this.vertices.push(v);
+      this.adjList.set(v, []);
+    }
+  }
+  // 获取图的顶点
+  getVertices() {
+    return this.vertices;
+  }
 
-const graph = new Graph({
-  container: document.getElementById("app"),
-  width: 800,
-  height: 600,
-  background: {
-    color: "#fffbe6", // 设置画布背景颜色
-  },
-  grid: {
-    size: 10, // 网格大小 10px
-    visible: true, // 渲染网格背景
-  },
+  // 向图中添加a和b两个顶点之间的边
+  addEdge(a, b) {
+    // 如果图中没有顶点a，先添加顶点a
+    if (!this.adjList.has(a)) {
+      this.addVertex(a);
+    }
+    // 如果图中没有顶点b，先添加顶点b
+    if (!this.adjList.has(b)) {
+      this.addVertex(b);
+    }
+
+    this.adjList.get(a).push(b); // 在顶点a中添加指向顶点b的边
+    this.adjList.get(b).push(a); // 在顶点b中添加指向顶点a的边
+  }
+  // 获取图中的边
+  getAdjList() {
+    return this.adjList;
+  }
+
+  toString() {
+    let s = "";
+    this.vertices.forEach((v) => {
+      s += `${v.name} -> `;
+      this.adjList.get(v).forEach((n) => {
+        s += `${n.name} `;
+      });
+      s += "\n";
+    });
+    return s;
+  }
+
+  static #Colors = {
+    WHITE: 0,
+    GREY: 1,
+    BLACK: 2,
+  };
+
+  initializeColor() {
+    let color = new WeakMap();
+    this.getVertices().forEach((v) => color.set(v, Graph.#Colors.WHITE));
+    return color;
+  }
+
+  // breadthFirstSearch 广度优先搜索
+  BFS(callback, startVertex) {
+    if (typeof startVertex === "undefined") {
+      startVertex = this.getVertices()[0];
+    }
+
+    let adjList = this.getAdjList();
+    let color = this.initializeColor();
+    let queue = [];
+
+    queue.push(startVertex);
+
+    while (queue.length) {
+      let u = queue.shift();
+      adjList.get(u).forEach((n) => {
+        if (color.get(n) === Graph.#Colors.WHITE) {
+          color.set(n, Graph.#Colors.GREY);
+          queue.push(n);
+        }
+      });
+
+      color.set(u, Graph.#Colors.BLACK);
+      if (callback) callback(u);
+    }
+  }
+}
+
+class Node {
+  value = {};
+  next = {};
+}
+class Edge {}
+
+// -----------------
+let graph = new Graph();
+let myVertices = [
+  { name: "A", id: "A" },
+  { name: "B", id: "B" },
+  { name: "C", id: "C" },
+  { name: "D", id: "D" },
+  { name: "E", id: "E" },
+  { name: "F", id: "F" },
+  { name: "G", id: "G" },
+  { name: "H", id: "H" },
+  { name: "I", id: "I" },
+];
+myVertices.forEach((v) => {
+  graph.addVertex(v);
 });
+graph.addEdge(myVertices[0], myVertices[1]);
+graph.addEdge(myVertices[0], myVertices[2]);
+graph.addEdge(myVertices[0], myVertices[3]);
+graph.addEdge(myVertices[2], myVertices[3]);
+graph.addEdge(myVertices[2], myVertices[6]);
+graph.addEdge(myVertices[3], myVertices[6]);
+graph.addEdge(myVertices[3], myVertices[7]);
+graph.addEdge(myVertices[1], myVertices[4]);
+graph.addEdge(myVertices[1], myVertices[5]);
+graph.addEdge(myVertices[4], myVertices[8]);
 
-graph.fromJSON(data);
+console.log(graph.toString());
+
+graph.BFS((vertice) => console.log(vertice));
+// ------------------
