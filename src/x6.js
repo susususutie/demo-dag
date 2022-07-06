@@ -1,4 +1,5 @@
 import { Graph } from "@antv/x6";
+import { Link } from "./Link";
 
 const data = {
   // 节点
@@ -129,3 +130,14 @@ const graph = new Graph({
 });
 
 graph.fromJSON(data);
+
+// ---------- 链路布局测试 ----------
+const link = new Link();
+link.parseFromX6(data.nodes, data.edges);
+
+console.log(link)
+link.layout()
+window.layout = () => {
+  link.layout()
+  // console.log()
+}
